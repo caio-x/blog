@@ -14,26 +14,26 @@
     
     
     
-    <title>Sqlite--OS | Caio&#39;s Blog</title>
+    <title>Sqlite--OS | Caio&#39;s Blog | Move And Go On</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     
     <meta name="theme-color" content="#3F51B5">
     
     
     <meta name="keywords" content="sqlite3,os">
-    <meta name="description" content="sqlite可以说是一个大师级的作品吧，也许是使用得太理所当然了，越往详细了解，越是觉得它的每一个追求细节的设计都非常精致的。自底向上看sqlite的时候发现自己欠缺和遗忘了好多知识（尤其是操作系统）。我觉得如果自己能把这个sqlite的系列都写完的话，在操作系统上，尤其是文件和内存管理上能有不少的知识复习和提升 :)。  简述本文主要讲述Sqlite的最底下那层，也就是OS-Interface">
+    <meta name="description" content="自底向上看sqlite的时候发现自己欠缺和遗忘了好多知识（尤其是操作系统）。如果能把这个sqlite的系列都写完的话，在操作系统上，尤其是文件和内存管理上能有不少的知识复习和提升 :)。  简述本文主要讲述Sqlite的最底下那层，也就是OS-Interface(后面我们统一叫os层)的原理和实现。 从接口上来看，OS层主要是对上层屏蔽了不同操作系统下的文件操作实现。OS层提供了统一的以sqli">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Sqlite--OS">
-<meta property="og:url" content="http://yoursite.com/2020/04/19/15.Sqlite-OS/index.html">
+<meta property="og:url" content="https://caio.ink/2020/04/19/15.Sqlite-OS/index.html">
 <meta property="og:site_name" content="Caio&#39;s Blog">
-<meta property="og:description" content="sqlite可以说是一个大师级的作品吧，也许是使用得太理所当然了，越往详细了解，越是觉得它的每一个追求细节的设计都非常精致的。自底向上看sqlite的时候发现自己欠缺和遗忘了好多知识（尤其是操作系统）。我觉得如果自己能把这个sqlite的系列都写完的话，在操作系统上，尤其是文件和内存管理上能有不少的知识复习和提升 :)。  简述本文主要讲述Sqlite的最底下那层，也就是OS-Interface">
-<meta property="og:locale" content="en_US">
+<meta property="og:description" content="自底向上看sqlite的时候发现自己欠缺和遗忘了好多知识（尤其是操作系统）。如果能把这个sqlite的系列都写完的话，在操作系统上，尤其是文件和内存管理上能有不少的知识复习和提升 :)。  简述本文主要讲述Sqlite的最底下那层，也就是OS-Interface(后面我们统一叫os层)的原理和实现。 从接口上来看，OS层主要是对上层屏蔽了不同操作系统下的文件操作实现。OS层提供了统一的以sqli">
+<meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://blog-caio.oss-cn-hongkong.aliyuncs.com/blog/2020/04/52e0629643e32cd4700b2ccf86cf96fb.png">
 <meta property="og:image" content="https://blog-caio.oss-cn-hongkong.aliyuncs.com/blog/2020/04/f847a348f6011bf85c71903fc41e03de.png">
 <meta property="og:image" content="https://blog-caio.oss-cn-hongkong.aliyuncs.com/blog/2020/04/b04697cfc5624e7286657b74d3096fa7.png">
 <meta property="og:image" content="https://caio.ink/wp-content/uploads/2019/12/7a75344f9b07e96907924a5b871e0d86.png">
 <meta property="article:published_time" content="2020-04-18T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-05-07T09:35:32.010Z">
+<meta property="article:modified_time" content="2020-05-24T11:08:17.428Z">
 <meta property="article:author" content="Caio">
 <meta property="article:tag" content="sqlite3">
 <meta property="article:tag" content="os">
@@ -123,7 +123,7 @@
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
                 <i class="icon icon-lg icon-chevron-left"></i>
             </a>
-            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="Search">
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
                 <i class="icon icon-lg icon-search"></i>
             </a>
@@ -187,11 +187,11 @@
         </div>
         <div class="post-content" id="post-content" itemprop="postContent">
             <blockquote>
-<p>sqlite可以说是一个大师级的作品吧，也许是使用得太理所当然了，越往详细了解，越是觉得它的每一个追求细节的设计都非常精致的。自底向上看sqlite的时候发现自己欠缺和遗忘了好多知识（尤其是操作系统）。我觉得如果自己能把这个sqlite的系列都写完的话，在操作系统上，尤其是文件和内存管理上能有不少的知识复习和提升 :)。</p>
+<p>自底向上看sqlite的时候发现自己欠缺和遗忘了好多知识（尤其是操作系统）。如果能把这个sqlite的系列都写完的话，在操作系统上，尤其是文件和内存管理上能有不少的知识复习和提升 :)。</p>
 </blockquote>
 <h2 id="简述"><a href="#简述" class="headerlink" title="简述"></a>简述</h2><p>本文主要讲述Sqlite的最底下那层，也就是OS-Interface(后面我们统一叫os层)的原理和实现。</p>
 <p>从接口上来看，OS层主要是对上层屏蔽了不同操作系统下的文件操作实现。OS层提供了统一的以<code>sqlite3Os</code>为前缀的接口方法给上层，实现了包括文件读写，文件创建/删除，sqlite文件锁，以及一些与系统实现相关的<code>Util</code>类操作，例如<code>sqlite3OsSleep</code>、<code>sqlite3OsCurrentTimeInt64</code>等等。这些接口方法都在<code>os.h</code>的头文件中声明了。</p>
-<p>OS层主要实现了文件操作，锁，以及共享内存，三大块的内容。<a href="https://caio.ink/sqlite-os-shm/" target="_blank" rel="noopener">共享内存</a>可以看这篇文章。本文就从另外两个角度去看OS是如何提供平台无关的接口。而其中 锁 是本层的一个核心功能，SQLite的多线程乃至跨进程的并发读写很大程度上就是依赖了这个锁的实现。</p>
+<p>OS层主要实现了文件操作，锁，以及共享内存，三大块的内容。<a href="https://caio.ink/sqlite-os-shm/">共享内存</a>可以看这篇文章。本文就从另外两个角度去看OS是如何提供平台无关的接口。而其中 锁 是本层的一个核心功能，SQLite的多线程乃至跨进程的并发读写很大程度上就是依赖了这个锁的实现。</p>
 <blockquote>
 <p>一般在移动设备上（尤其是iOS）多进程读写文件在操作系统层面上就被禁止了，所以有些框架（WCDB）为了减少一些文件锁带来的读写性能开销，直接把文件锁禁用了，打开即独占。</p>
 </blockquote>
@@ -343,18 +343,14 @@
     
     <div class="content">
         
-<span class="post-time">
-    Last updated: <time datetime="2020-05-07T09:35:32.010Z" itemprop="dateUpdated">2020-05-07 17:35:32</time>
-</span><br>
-
 
         
-        这里可以写作者留言，标签和 hexo 中所有变量及辅助函数等均可调用，示例：<a href="/2020/04/19/15.Sqlite-OS/" target="_blank" rel="external">http://yoursite.com/2020/04/19/15.Sqlite-OS/</a>
+        留言区，暂未开放......
         
     </div>
     
     <footer>
-        <a href="http://yoursite.com">
+        <a href="https://caio.ink">
             <img src="/img/avatar.jpg" alt="Caio">
             Caio
         </a>
@@ -362,10 +358,6 @@
 </blockquote>
 
         
-<div class="page-reward">
-    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
-</div>
-
 
 
         <div class="post-footer">
@@ -380,7 +372,7 @@
 <div class="page-share" id="pageShare">
     <ul class="reset share-icons">
       <li>
-        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2020/04/19/15.Sqlite-OS/&title=《Sqlite--OS》 — Caio's Blog&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://caio.ink/2020/04/19/15.Sqlite-OS/&title=《Sqlite--OS》 — Caio's Blog&pic=https://caio.ink/img/avatar.jpg" data-title="微博">
           <i class="icon icon-weibo"></i>
         </a>
       </li>
@@ -390,22 +382,22 @@
         </a>
       </li>
       <li>
-        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2020/04/19/15.Sqlite-OS/&title=《Sqlite--OS》 — Caio's Blog&source=Life goes on and on" data-title=" QQ">
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://caio.ink/2020/04/19/15.Sqlite-OS/&title=《Sqlite--OS》 — Caio's Blog&source=Life goes on and on" data-title=" QQ">
           <i class="icon icon-qq"></i>
         </a>
       </li>
       <li>
-        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2020/04/19/15.Sqlite-OS/" data-title=" Facebook">
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://caio.ink/2020/04/19/15.Sqlite-OS/" data-title=" Facebook">
           <i class="icon icon-facebook"></i>
         </a>
       </li>
       <li>
-        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Sqlite--OS》 — Caio's Blog&url=http://yoursite.com/2020/04/19/15.Sqlite-OS/&via=http://yoursite.com" data-title=" Twitter">
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Sqlite--OS》 — Caio's Blog&url=https://caio.ink/2020/04/19/15.Sqlite-OS/&via=https://caio.ink" data-title=" Twitter">
           <i class="icon icon-twitter"></i>
         </a>
       </li>
       <li>
-        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2020/04/19/15.Sqlite-OS/" data-title=" Google+">
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://caio.ink/2020/04/19/15.Sqlite-OS/" data-title=" Google+">
           <i class="icon icon-google-plus"></i>
         </a>
       </li>
@@ -443,15 +435,6 @@
     
 
 
-<section class="comments" id="comments">
-    <div id="disqus_thread"></div>
-    <script>
-    var disqus_shortname = 'true';
-    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
-    </script>
-    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" target="_blank" rel="noopener">comments powered by Disqus.</a></noscript>
-</section>
-
 
 
 
@@ -472,32 +455,6 @@
 
 </article>
 
-<div id="reward" class="page-modal reward-lay">
-    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
-    <h3 class="reward-title">
-        <i class="icon icon-quote-left"></i>
-        谢谢大爷~
-        <i class="icon icon-quote-right"></i>
-    </h3>
-    <div class="reward-content">
-        
-        <div class="reward-code">
-            <img id="rewardCode" src="/img/wechat.jpg" alt="打赏二维码">
-        </div>
-        
-        <label class="reward-toggle">
-            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
-                data-wechat="/img/wechat.jpg" data-alipay="/img/alipay.jpg">
-            <div class="reward-toggle-ctrol">
-                <span class="reward-toggle-item wechat">微信</span>
-                <span class="reward-toggle-label"></span>
-                <span class="reward-toggle-item alipay">支付宝</span>
-            </div>
-        </label>
-        
-    </div>
-</div>
-
 
 
 </div>
@@ -508,7 +465,7 @@
 
         <p>
             
-            <span>This blog is licensed under a <a rel="license noopener" href="https://creativecommons.org/licenses/by/4.0/" target="_blank">Creative Commons Attribution 4.0 International License</a>.</span>
+            <span>博客内容遵循 <a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0 国际协议</a></span>
         </p>
     </div>
     <div class="bottom">
@@ -530,7 +487,7 @@
 <div class="global-share" id="globalShare">
     <ul class="reset share-icons">
       <li>
-        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2020/04/19/15.Sqlite-OS/&title=《Sqlite--OS》 — Caio's Blog&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://caio.ink/2020/04/19/15.Sqlite-OS/&title=《Sqlite--OS》 — Caio's Blog&pic=https://caio.ink/img/avatar.jpg" data-title="微博">
           <i class="icon icon-weibo"></i>
         </a>
       </li>
@@ -540,22 +497,22 @@
         </a>
       </li>
       <li>
-        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2020/04/19/15.Sqlite-OS/&title=《Sqlite--OS》 — Caio's Blog&source=Life goes on and on" data-title=" QQ">
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://caio.ink/2020/04/19/15.Sqlite-OS/&title=《Sqlite--OS》 — Caio's Blog&source=Life goes on and on" data-title=" QQ">
           <i class="icon icon-qq"></i>
         </a>
       </li>
       <li>
-        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2020/04/19/15.Sqlite-OS/" data-title=" Facebook">
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://caio.ink/2020/04/19/15.Sqlite-OS/" data-title=" Facebook">
           <i class="icon icon-facebook"></i>
         </a>
       </li>
       <li>
-        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Sqlite--OS》 — Caio's Blog&url=http://yoursite.com/2020/04/19/15.Sqlite-OS/&via=http://yoursite.com" data-title=" Twitter">
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《Sqlite--OS》 — Caio's Blog&url=https://caio.ink/2020/04/19/15.Sqlite-OS/&via=https://caio.ink" data-title=" Twitter">
           <i class="icon icon-twitter"></i>
         </a>
       </li>
       <li>
-        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2020/04/19/15.Sqlite-OS/" data-title=" Google+">
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://caio.ink/2020/04/19/15.Sqlite-OS/" data-title=" Google+">
           <i class="icon icon-google-plus"></i>
         </a>
       </li>
@@ -566,7 +523,7 @@
 <div class="page-modal wx-share" id="wxShare">
     <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
-    <img src="//api.qrserver.com/v1/create-qr-code/?data=http://yoursite.com/2020/04/19/15.Sqlite-OS/" alt="微信分享二维码">
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://caio.ink/2020/04/19/15.Sqlite-OS/" alt="微信分享二维码">
 </div>
 
 
@@ -574,7 +531,7 @@
 
     <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
 <script>
-var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+var BLOG = { ROOT: '/', SHARE: true, REWARD: false };
 
 
 </script>
@@ -613,7 +570,7 @@ var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
     var OriginTitile = document.title, titleTime;
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) {
-            document.title = '离开中...';
+            document.title = '你快回来...';
             clearTimeout(titleTime);
         } else {
             document.title = '回来啦~';

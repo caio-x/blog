@@ -14,7 +14,7 @@
     
     
     
-    <title>oc中@synchronized的性能瓶颈 | Caio&#39;s Blog</title>
+    <title>老生常谈，oc block的实现 | Caio&#39;s Blog | Move And Go On</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     
     <meta name="theme-color" content="#3F51B5">
@@ -23,11 +23,11 @@
     <meta name="keywords" content="object-c">
     <meta name="description" content="一般来说OC上的语法糖，都可以使用 clang --rewrite-objc code.m 让clang 编译为 c 或 c++ ，由此可以窥探这些语法糖的具体实现。例如，oc的block，@autoreleasepool，@synchronized等等 说明 Block的本质是个C的Struct，所以可以像C的Struct一样使用。1234typedef int (^blk_t) (int)bl">
 <meta property="og:type" content="article">
-<meta property="og:title" content="oc中@synchronized的性能瓶颈">
-<meta property="og:url" content="http://yoursite.com/2019/12/21/5.OC-Block-imp/index.html">
+<meta property="og:title" content="老生常谈，oc block的实现">
+<meta property="og:url" content="https://caio.ink/2019/12/21/5.OC-Block-imp/index.html">
 <meta property="og:site_name" content="Caio&#39;s Blog">
 <meta property="og:description" content="一般来说OC上的语法糖，都可以使用 clang --rewrite-objc code.m 让clang 编译为 c 或 c++ ，由此可以窥探这些语法糖的具体实现。例如，oc的block，@autoreleasepool，@synchronized等等 说明 Block的本质是个C的Struct，所以可以像C的Struct一样使用。1234typedef int (^blk_t) (int)bl">
-<meta property="og:locale" content="en_US">
+<meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://caio.ink/wp-content/uploads/2019/12/e26327c7a8252fbb2df5b1fc39d64cda.png">
 <meta property="og:image" content="https://caio.ink/wp-content/uploads/2019/12/1c595347ea6f38eb59d8d6801db5a5a0.png">
 <meta property="og:image" content="https://caio.ink/wp-content/uploads/2019/12/9982c40af54e96e97aa13b0b29efdfdc.png">
@@ -42,7 +42,7 @@
 <meta property="og:image" content="https://caio.ink/wp-content/uploads/2019/12/63595834f2342745c0191f4babc0ca94.png">
 <meta property="og:image" content="https://caio.ink/wp-content/uploads/2019/12/053f17c28960744f29a443720914d877.png">
 <meta property="article:published_time" content="2019-12-20T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-05-07T09:35:32.010Z">
+<meta property="article:modified_time" content="2020-05-24T11:14:13.014Z">
 <meta property="article:author" content="Caio">
 <meta property="article:tag" content="object-c">
 <meta name="twitter:card" content="summary">
@@ -125,13 +125,13 @@
         <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light on" id="menu-toggle">
           <i class="icon icon-lg icon-navicon"></i>
         </a>
-        <div class="flex-col header-title ellipsis">oc中@synchronized的性能瓶颈</div>
+        <div class="flex-col header-title ellipsis">老生常谈，oc block的实现</div>
         
         <div class="search-wrap" id="search-wrap">
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="back">
                 <i class="icon icon-lg icon-chevron-left"></i>
             </a>
-            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="Search">
+            <input type="text" id="key" class="search-input" autocomplete="off" placeholder="输入感兴趣的关键字">
             <a href="javascript:;" class="header-icon waves-effect waves-circle waves-light" id="search">
                 <i class="icon icon-lg icon-search"></i>
             </a>
@@ -147,7 +147,7 @@
 <header class="content-header post-header">
 
     <div class="container fade-scale">
-        <h1 class="title">oc中@synchronized的性能瓶颈</h1>
+        <h1 class="title">老生常谈，oc block的实现</h1>
         <h5 class="subtitle">
             
                 <time datetime="2019-12-20T16:00:00.000Z" itemprop="datePublished" class="page-time">
@@ -181,7 +181,7 @@
   class="post-article article-type-post fade" itemprop="blogPost">
 
     <div class="post-card">
-        <h1 class="post-card-title">oc中@synchronized的性能瓶颈</h1>
+        <h1 class="post-card-title">老生常谈，oc block的实现</h1>
         <div class="post-meta">
             <time class="post-time" title="2019-12-21 00:00:00" datetime="2019-12-20T16:00:00.000Z"  itemprop="datePublished">2019-12-21</time>
 
@@ -194,7 +194,7 @@
 
         </div>
         <div class="post-content" id="post-content" itemprop="postContent">
-            <p>一般来说OC上的语法糖，都可以使用 <code>clang --rewrite-objc code.m</code> 让clang 编译为 c 或 c++ ，由此可以窥探这些语法糖的具体实现。例如，oc的block，@autoreleasepool，<a href="https://caio.ink/article-for-synchronized/" target="_blank" rel="noopener">@synchronized</a>等等</p>
+            <p>一般来说OC上的语法糖，都可以使用 <code>clang --rewrite-objc code.m</code> 让clang 编译为 c 或 c++ ，由此可以窥探这些语法糖的具体实现。例如，oc的block，@autoreleasepool，<a href="https://caio.ink/article-for-synchronized/">@synchronized</a>等等</p>
 <h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><ol>
 <li>Block的本质是个C的Struct，所以可以像C的Struct一样使用。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">typedef</span> <span class="title">int</span> <span class="params">(^<span class="keyword">blk_t</span>)</span> <span class="params">(<span class="keyword">int</span>)</span></span></span><br><span class="line"><span class="function"><span class="keyword">blk_t</span> blk </span>= ^(<span class="keyword">int</span> count)&#123;<span class="keyword">return</span> count;&#125;;</span><br><span class="line"><span class="keyword">blk_t</span> *blkptr = &amp;blk;</span><br><span class="line">(*blkptr)(<span class="number">10</span>);</span><br></pre></td></tr></table></figure></li>
 <li>Block 没有实现截获C语言数组，只能通过指针截获。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//const char text[] = “hello”;编译失败</span></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">char</span> *<span class="built_in">text</span> = “hello”;</span><br><span class="line"><span class="keyword">void</span> (^blk)(<span class="keyword">void</span>) = ^&#123;</span><br><span class="line">	<span class="built_in">text</span>[<span class="number">0</span>];</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
@@ -354,18 +354,14 @@
     
     <div class="content">
         
-<span class="post-time">
-    Last updated: <time datetime="2020-05-07T09:35:32.010Z" itemprop="dateUpdated">2020-05-07 17:35:32</time>
-</span><br>
-
 
         
-        这里可以写作者留言，标签和 hexo 中所有变量及辅助函数等均可调用，示例：<a href="/2019/12/21/5.OC-Block-imp/" target="_blank" rel="external">http://yoursite.com/2019/12/21/5.OC-Block-imp/</a>
+        留言区，暂未开放......
         
     </div>
     
     <footer>
-        <a href="http://yoursite.com">
+        <a href="https://caio.ink">
             <img src="/img/avatar.jpg" alt="Caio">
             Caio
         </a>
@@ -373,10 +369,6 @@
 </blockquote>
 
         
-<div class="page-reward">
-    <a id="rewardBtn" href="javascript:;" class="page-reward-btn waves-effect waves-circle waves-light">赏</a>
-</div>
-
 
 
         <div class="post-footer">
@@ -391,7 +383,7 @@
 <div class="page-share" id="pageShare">
     <ul class="reset share-icons">
       <li>
-        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/12/21/5.OC-Block-imp/&title=《oc中@synchronized的性能瓶颈》 — Caio's Blog&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://caio.ink/2019/12/21/5.OC-Block-imp/&title=《老生常谈，oc block的实现》 — Caio's Blog&pic=https://caio.ink/img/avatar.jpg" data-title="微博">
           <i class="icon icon-weibo"></i>
         </a>
       </li>
@@ -401,22 +393,22 @@
         </a>
       </li>
       <li>
-        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/12/21/5.OC-Block-imp/&title=《oc中@synchronized的性能瓶颈》 — Caio's Blog&source=Life goes on and on" data-title=" QQ">
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://caio.ink/2019/12/21/5.OC-Block-imp/&title=《老生常谈，oc block的实现》 — Caio's Blog&source=Life goes on and on" data-title=" QQ">
           <i class="icon icon-qq"></i>
         </a>
       </li>
       <li>
-        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/12/21/5.OC-Block-imp/" data-title=" Facebook">
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://caio.ink/2019/12/21/5.OC-Block-imp/" data-title=" Facebook">
           <i class="icon icon-facebook"></i>
         </a>
       </li>
       <li>
-        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《oc中@synchronized的性能瓶颈》 — Caio's Blog&url=http://yoursite.com/2019/12/21/5.OC-Block-imp/&via=http://yoursite.com" data-title=" Twitter">
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《老生常谈，oc block的实现》 — Caio's Blog&url=https://caio.ink/2019/12/21/5.OC-Block-imp/&via=https://caio.ink" data-title=" Twitter">
           <i class="icon icon-twitter"></i>
         </a>
       </li>
       <li>
-        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/12/21/5.OC-Block-imp/" data-title=" Google+">
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://caio.ink/2019/12/21/5.OC-Block-imp/" data-title=" Google+">
           <i class="icon icon-google-plus"></i>
         </a>
       </li>
@@ -461,15 +453,6 @@
     
 
 
-<section class="comments" id="comments">
-    <div id="disqus_thread"></div>
-    <script>
-    var disqus_shortname = 'true';
-    lazyScripts.push('//' + disqus_shortname + '.disqus.com/embed.js')
-    </script>
-    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" target="_blank" rel="noopener">comments powered by Disqus.</a></noscript>
-</section>
-
 
 
 
@@ -490,32 +473,6 @@
 
 </article>
 
-<div id="reward" class="page-modal reward-lay">
-    <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
-    <h3 class="reward-title">
-        <i class="icon icon-quote-left"></i>
-        谢谢大爷~
-        <i class="icon icon-quote-right"></i>
-    </h3>
-    <div class="reward-content">
-        
-        <div class="reward-code">
-            <img id="rewardCode" src="/img/wechat.jpg" alt="打赏二维码">
-        </div>
-        
-        <label class="reward-toggle">
-            <input id="rewardToggle" type="checkbox" class="reward-toggle-check"
-                data-wechat="/img/wechat.jpg" data-alipay="/img/alipay.jpg">
-            <div class="reward-toggle-ctrol">
-                <span class="reward-toggle-item wechat">微信</span>
-                <span class="reward-toggle-label"></span>
-                <span class="reward-toggle-item alipay">支付宝</span>
-            </div>
-        </label>
-        
-    </div>
-</div>
-
 
 
 </div>
@@ -526,7 +483,7 @@
 
         <p>
             
-            <span>This blog is licensed under a <a rel="license noopener" href="https://creativecommons.org/licenses/by/4.0/" target="_blank">Creative Commons Attribution 4.0 International License</a>.</span>
+            <span>博客内容遵循 <a rel="license noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">知识共享 署名 - 非商业性 - 相同方式共享 4.0 国际协议</a></span>
         </p>
     </div>
     <div class="bottom">
@@ -548,7 +505,7 @@
 <div class="global-share" id="globalShare">
     <ul class="reset share-icons">
       <li>
-        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=http://yoursite.com/2019/12/21/5.OC-Block-imp/&title=《oc中@synchronized的性能瓶颈》 — Caio's Blog&pic=http://yoursite.com/img/avatar.jpg" data-title="微博">
+        <a class="weibo share-sns" target="_blank" href="http://service.weibo.com/share/share.php?url=https://caio.ink/2019/12/21/5.OC-Block-imp/&title=《老生常谈，oc block的实现》 — Caio's Blog&pic=https://caio.ink/img/avatar.jpg" data-title="微博">
           <i class="icon icon-weibo"></i>
         </a>
       </li>
@@ -558,22 +515,22 @@
         </a>
       </li>
       <li>
-        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=http://yoursite.com/2019/12/21/5.OC-Block-imp/&title=《oc中@synchronized的性能瓶颈》 — Caio's Blog&source=Life goes on and on" data-title=" QQ">
+        <a class="qq share-sns" target="_blank" href="http://connect.qq.com/widget/shareqq/index.html?url=https://caio.ink/2019/12/21/5.OC-Block-imp/&title=《老生常谈，oc block的实现》 — Caio's Blog&source=Life goes on and on" data-title=" QQ">
           <i class="icon icon-qq"></i>
         </a>
       </li>
       <li>
-        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=http://yoursite.com/2019/12/21/5.OC-Block-imp/" data-title=" Facebook">
+        <a class="facebook share-sns" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https://caio.ink/2019/12/21/5.OC-Block-imp/" data-title=" Facebook">
           <i class="icon icon-facebook"></i>
         </a>
       </li>
       <li>
-        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《oc中@synchronized的性能瓶颈》 — Caio's Blog&url=http://yoursite.com/2019/12/21/5.OC-Block-imp/&via=http://yoursite.com" data-title=" Twitter">
+        <a class="twitter share-sns" target="_blank" href="https://twitter.com/intent/tweet?text=《老生常谈，oc block的实现》 — Caio's Blog&url=https://caio.ink/2019/12/21/5.OC-Block-imp/&via=https://caio.ink" data-title=" Twitter">
           <i class="icon icon-twitter"></i>
         </a>
       </li>
       <li>
-        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=http://yoursite.com/2019/12/21/5.OC-Block-imp/" data-title=" Google+">
+        <a class="google share-sns" target="_blank" href="https://plus.google.com/share?url=https://caio.ink/2019/12/21/5.OC-Block-imp/" data-title=" Google+">
           <i class="icon icon-google-plus"></i>
         </a>
       </li>
@@ -584,7 +541,7 @@
 <div class="page-modal wx-share" id="wxShare">
     <a class="close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
-    <img src="//api.qrserver.com/v1/create-qr-code/?data=http://yoursite.com/2019/12/21/5.OC-Block-imp/" alt="微信分享二维码">
+    <img src="//api.qrserver.com/v1/create-qr-code/?data=https://caio.ink/2019/12/21/5.OC-Block-imp/" alt="微信分享二维码">
 </div>
 
 
@@ -592,7 +549,7 @@
 
     <script src="//cdn.bootcss.com/node-waves/0.7.4/waves.min.js"></script>
 <script>
-var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
+var BLOG = { ROOT: '/', SHARE: true, REWARD: false };
 
 
 </script>
@@ -631,7 +588,7 @@ var BLOG = { ROOT: '/', SHARE: true, REWARD: true };
     var OriginTitile = document.title, titleTime;
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) {
-            document.title = '离开中...';
+            document.title = '你快回来...';
             clearTimeout(titleTime);
         } else {
             document.title = '回来啦~';
