@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="zh-CH">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"120.26.64.161","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="记录使用Swift的时候遇到的一些奇葩问题。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Swift - 踩坑集锦">
+<meta property="og:url" content="http://120.26.64.161:4000/2022/08/24/2022-08-24_swift-conclusion/index.html">
+<meta property="og:site_name" content="KY的技术小站">
+<meta property="og:description" content="记录使用Swift的时候遇到的一些奇葩问题。">
+<meta property="og:locale" content="zh_CH">
+<meta property="article:published_time" content="2022-08-23T16:00:00.000Z">
+<meta property="article:modified_time" content="2024-01-19T07:14:04.241Z">
+<meta property="article:author" content="Caio">
+<meta property="article:tag" content="Swift">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://120.26.64.161:4000/2022/08/24/2022-08-24_swift-conclusion/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CH'
+  };
+</script>
+
+  <title>Swift - 踩坑集锦 | KY的技术小站</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">KY的技术小站</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Cpp creates world</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CH">
+    <link itemprop="mainEntityOfPage" href="http://120.26.64.161:4000/2022/08/24/2022-08-24_swift-conclusion/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Caio">
+      <meta itemprop="description" content="Spade-Ace&apos; Tech Blog">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="KY的技术小站">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Swift - 踩坑集锦
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2022-08-24 00:00:00" itemprop="dateCreated datePublished" datetime="2022-08-24T00:00:00+08:00">2022-08-24</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-01-19 15:14:04" itemprop="dateModified" datetime="2024-01-19T15:14:04+08:00">2024-01-19</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Swift/" itemprop="url" rel="index"><span itemprop="name">Swift</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>记录使用Swift的时候遇到的一些奇葩问题。</p>
+<span id="more"></span>
+
+<h2 id="Swift-踩坑集锦"><a href="#Swift-踩坑集锦" class="headerlink" title="Swift 踩坑集锦"></a>Swift 踩坑集锦</h2><h3 id="Optional-的推导问题"><a href="#Optional-的推导问题" class="headerlink" title="Optional 的推导问题"></a>Optional 的推导问题</h3><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> list:[<span class="type">String</span>]<span class="operator">?</span> <span class="operator">=</span> [<span class="string">&quot;X&quot;</span>, <span class="string">&quot;Y&quot;</span>]</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> dic:[<span class="type">String</span> : <span class="keyword">Any</span>] <span class="operator">=</span> [:]</span><br><span class="line">dic[<span class="string">&quot;Z&quot;</span>] <span class="operator">=</span> (list <span class="operator">??</span> []).map &#123;</span><br><span class="line">    [<span class="string">&quot;V&quot;</span> : <span class="variable">$0</span>]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> value <span class="operator">=</span> (list <span class="operator">??</span> []).map &#123;</span><br><span class="line">    [<span class="string">&quot;V&quot;</span> : <span class="variable">$0</span>]</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">print</span>(dic)</span><br><span class="line"><span class="built_in">print</span>(value)</span><br></pre></td></tr></table></figure>
+
+<p>上述代码中<code>dic</code>的<code>Z</code>内存储的值，和<code>value</code>虽然是同一个表达式的计算结果，但是最终的值是不一样的。</p>
+<p><code>Z</code>最终的值为<code>[&quot;V&quot;: [&quot;X&quot;, &quot;Y&quot;]]</code>, value为<code>[[&quot;V&quot;: &quot;X&quot;], [&quot;V&quot;: &quot;Y&quot;]]</code></p>
+<blockquote>
+<p>问题根本原因</p>
+</blockquote>
+<p>在Swift的推导系统中，<code>Z</code>的右值被推导为<code>Optional.map()</code>, value的右值被推导为<code>Array.map()</code>。</p>
+<p>这个是<code>Collection</code>的map源码</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">@inlinable</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">func</span> <span class="title function_">map</span>&lt;<span class="type">T</span>&gt;(</span><br><span class="line">    <span class="keyword">_</span> <span class="params">transform</span>: (<span class="type">Element</span>) <span class="keyword">throws</span> -&gt; <span class="type">T</span></span><br><span class="line">  ) <span class="keyword">rethrows</span> -&gt; [<span class="type">T</span>] &#123;</span><br><span class="line">    <span class="comment">// <span class="doctag">TODO:</span> swift-3-indexing-model - review the following</span></span><br><span class="line">    <span class="keyword">let</span> n <span class="operator">=</span> <span class="keyword">self</span>.count</span><br><span class="line">    <span class="keyword">if</span> n <span class="operator">==</span> <span class="number">0</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> []</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> result <span class="operator">=</span> <span class="type">ContiguousArray</span>&lt;<span class="type">T</span>&gt;()</span><br><span class="line">    result.reserveCapacity(n)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> i <span class="operator">=</span> <span class="keyword">self</span>.startIndex</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> <span class="keyword">_</span> <span class="keyword">in</span> <span class="number">0</span><span class="operator">..&lt;</span>n &#123;</span><br><span class="line">      result.append(<span class="keyword">try</span> transform(<span class="keyword">self</span>[i]))</span><br><span class="line">      formIndex(after: <span class="operator">&amp;</span>i)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    _expectEnd(of: <span class="keyword">self</span>, is: i)</span><br><span class="line">    <span class="keyword">return</span> <span class="type">Array</span>(result)</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个是<code>Optional</code>的map源码</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">@inlinable</span></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">func</span> <span class="title function_">map</span>&lt;<span class="type">U</span>&gt;(</span><br><span class="line">    <span class="keyword">_</span> <span class="params">transform</span>: (<span class="type">Wrapped</span>) <span class="keyword">throws</span> -&gt; <span class="type">U</span></span><br><span class="line">  ) <span class="keyword">rethrows</span> -&gt; <span class="type">U</span>? &#123;</span><br><span class="line">    <span class="keyword">switch</span> <span class="keyword">self</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> .some(<span class="keyword">let</span> y):</span><br><span class="line">      <span class="keyword">return</span> .some(<span class="keyword">try</span> transform(y))</span><br><span class="line">    <span class="keyword">case</span> .none:</span><br><span class="line">      <span class="keyword">return</span> .none</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到这两个map的函数原型都不一样，<code>Collection.map</code>是返回泛型数组，而<code>Optional.map</code>是返回泛型值。</p>
+<p><code>Collection.map</code>的作用是，对每一个Collection内的元素执行<code>transform</code>闭包，将<code>transform</code>返回的每一个元素merge为最终的数组返回，这个是熟知的Array的map操作。</p>
+<p><code>Optional.map</code>的作用更多的是屏蔽掉<code>Optional</code>对于运算符的影响，避免更多解包的胶水代码出现，官方文档举了个例子:</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> possibleNumber: <span class="type">Int</span>? <span class="operator">=</span> <span class="type">Int</span>(<span class="string">&quot;42&quot;</span>)</span><br><span class="line"><span class="keyword">let</span> possibleSquare <span class="operator">=</span> possibleNumber.map &#123; <span class="variable">$0</span> <span class="operator">*</span> <span class="variable">$0</span> &#125;</span><br><span class="line"><span class="built_in">print</span>(possibleSquare)</span><br><span class="line"><span class="comment">// Prints &quot;Optional(1764)&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> noNumber: <span class="type">Int</span>? <span class="operator">=</span> <span class="literal">nil</span></span><br><span class="line"><span class="keyword">let</span> noSquare <span class="operator">=</span> noNumber.map &#123; <span class="variable">$0</span> <span class="operator">*</span> <span class="variable">$0</span> &#125;</span><br><span class="line"><span class="built_in">print</span>(noSquare)</span><br><span class="line"><span class="comment">// Prints &quot;nil&quot;</span></span><br></pre></td></tr></table></figure>
+<p><code>Optional.map</code>可以避免<code>Optional</code>类型没有重载<code>*</code>运算符而导致的编译问题。</p>
+<p>回过头来分析<code>dic</code>中<code>Z</code>的右值，如果<code>list ?? []</code>被推导为<code>Optional</code>,那么<code>map</code>闭包中的<code>$0</code>就是<code>Optional</code>内的非空值，结果确实就是<code>[&quot;V&quot;: [&quot;X&quot;, &quot;Y&quot;]]</code>。</p>
+<blockquote>
+<p>为什么会出现这个不一致的推导结果？</p>
+</blockquote>
+<p>如果把测试代码中list解包改成这样:</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> list_1 <span class="operator">=</span> list <span class="operator">??</span> []</span><br><span class="line">dic[<span class="string">&quot;Z&quot;</span>] <span class="operator">=</span> list_1.map &#123;</span><br><span class="line">    [<span class="string">&quot;V&quot;</span> : <span class="variable">$0</span>]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>或者在定义字典的时候不使用<code>Any</code>, 而是直接明确类型:</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> dic:[<span class="type">String</span> : [[<span class="type">String</span> : <span class="type">String</span>]]] <span class="operator">=</span> [:]</span><br></pre></td></tr></table></figure>
+
+<p><code>dic</code>中<code>Z</code>的值和<code>value</code>就保持一致了。</p>
+<p><code>Optional</code>重载了两个”??”运算符，这两个区别在于”??”右参是否依旧为<code>Optional</code>类型的值。上面的测试代码中右参为<code>[]</code>, 很明显是一个数组类型。</p>
+<p>这里先推测一下，在左值为<code>Any</code>类型的时候，右值当出现<code>??</code>解包的时候，类型推导系统可能会出错。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Swift/" rel="tag"># Swift</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/07/20/2022-07-20_ARM64_assmble/" rel="prev" title="ARM64汇编分析常用指令、寄存器">
+      <i class="fa fa-chevron-left"></i> ARM64汇编分析常用指令、寄存器
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/02/21/2023-02-21_swift-compiler-1/" rel="next" title="Swift编译原理(1)">
+      Swift编译原理(1) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Swift-%E8%B8%A9%E5%9D%91%E9%9B%86%E9%94%A6"><span class="nav-number">1.</span> <span class="nav-text">Swift 踩坑集锦</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Optional-%E7%9A%84%E6%8E%A8%E5%AF%BC%E9%97%AE%E9%A2%98"><span class="nav-number">1.1.</span> <span class="nav-text">Optional 的推导问题</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Caio</p>
+  <div class="site-description" itemprop="description">Spade-Ace&apos; Tech Blog</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Caio</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
